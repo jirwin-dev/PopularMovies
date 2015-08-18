@@ -3,7 +3,8 @@ package com.jirwindev.popularmovies;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.graphics.drawable.Drawable;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -12,9 +13,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.GridLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -35,6 +39,12 @@ public class GridActivityFragment extends Fragment {
 
     private GridView gridMovies;
     private ArrayList<MoviePoster> moviePosters;
+    private JSONObject config;
+
+    final String MOVIEDB_CONFIG_URL = "http://api.themoviedb.org/3/configuration?api_key=";
+    final String MOVIEDB_BASE_URL = "http://api.themoviedb.org/3/discover/movie?";
+    final String API_PARAM = "api_key";
+    final String API_KEY = "REDACTED";
 
     public GridActivityFragment() {
     }
@@ -68,7 +78,8 @@ public class GridActivityFragment extends Fragment {
     private class MoviePoster {
 
         private int id;
-        private Drawable poster;
+        private String path;
+        private Bitmap poster;
 
         public MoviePoster() {
         }
@@ -77,8 +88,9 @@ public class GridActivityFragment extends Fragment {
             this.id = id;
         }
 
-        public MoviePoster(int id, Drawable poster) {
+        public MoviePoster(int id, String path, Bitmap poster) {
             this.id = id;
+            this.path = path;
             this.poster = poster;
         }
 
@@ -90,12 +102,20 @@ public class GridActivityFragment extends Fragment {
             this.id = id;
         }
 
-        public Drawable getPoster() {
+        public Bitmap getPoster() {
             return poster;
         }
 
-        public void setPoster(Drawable poster) {
+        public void setPoster(Bitmap poster) {
             this.poster = poster;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path;
         }
     }
 
@@ -114,10 +134,9 @@ public class GridActivityFragment extends Fragment {
 
         @Override
         public Object getItem(int position) {
+            Log.e("ADAPTER", "GET ITEM CALLED");
             if (moviePosters.get(position).getPoster() == null) {
-                new GetMoviePosterThread(position).execute(moviePosters.get(position).getId());
-                ImageView loadingImageView = new ImageView(context);
-                loadingImageView.setImageResource(android.R.drawable.progress_indeterminate_horizontal);
+                new GetMoviePosterThread(position).execute(moviePosters.get(position).getPath());
             }
             return moviePosters.get(position).getPoster();
         }
@@ -133,19 +152,29 @@ public class GridActivityFragment extends Fragment {
             if (convertView == null) {
                 // if it's not recycled, initialize some attributes
                 imageView = new ImageView(context);
-                imageView.setLayoutParams(new GridView.LayoutParams(85, 85));
-                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                imageView.setLayoutParams(new GridView.LayoutParams(
+                        GridLayout.LayoutParams.WRAP_CONTENT,
+                        GridLayout.LayoutParams.WRAP_CONTENT
+                ));
+//                imageView.setScaleType(ImageView.ScaleType.FIT_XY);
                 imageView.setPadding(8, 8, 8, 8);
+            } else if (convertView instanceof ProgressBar) {
+                return (ProgressBar) convertView;
             } else {
                 imageView = (ImageView) convertView;
             }
 
-            imageView.setImageDrawable(moviePosters.get(position).getPoster());
+            if (moviePosters.get(position).getPoster() == null) {
+                ProgressBar progressBar = new ProgressBar(getActivity());
+                progressBar.setIndeterminate(true);
+                return progressBar;
+            } else
+                imageView.setImageBitmap(moviePosters.get(position).getPoster());
             return imageView;
         }
     }
 
-    private class GetMoviePosterThread extends AsyncTask<Integer, Integer, MoviePoster> {
+    private class GetMoviePosterThread extends AsyncTask<String, Void, Bitmap> {
 
         private int position;
 
@@ -159,15 +188,36 @@ public class GridActivityFragment extends Fragment {
         }
 
         @Override
-        protected MoviePoster doInBackground(Integer... params) {
-            return null;
+        protected Bitmap doInBackground(String... params) {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Log.e("GETTING IMAGE AT", params[0]);
+            String urldisplay = params[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return mIcon11;
         }
 
         @Override
-        protected void onPostExecute(MoviePoster poster) {
+        protected void onPostExecute(Bitmap poster) {
             super.onPostExecute(poster);
 
-            moviePosters.set(this.position, poster);
+            moviePosters.get(this.position).setPoster(poster);
+
+            if (position <= gridMovies.getLastVisiblePosition()) {
+                //TODO CHECK FOR PROGRESS BAR
+                ((ImageView) gridMovies.getChildAt(position - gridMovies.getFirstVisiblePosition())).setImageBitmap(poster);
+                ((ImageView) gridMovies.getChildAt(position - gridMovies.getFirstVisiblePosition())).invalidate();
+            }
         }
 
     }
@@ -202,48 +252,22 @@ public class GridActivityFragment extends Fragment {
             String forecastJsonStr = null;
 
             try {
-                final String MOVIEDB_BASE_URL =
-                        "http://api.themoviedb.org/3/discover/movie?";
-                final String API_PARAM = "api_key";
-                final String API_KEY = "REDACTED";
+                config = getConfig();
 
-                Uri builtUri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
-                        .appendQueryParameter(API_PARAM, API_KEY)
-                        .build();
-
-                URL url = new URL(builtUri.toString());
-
-                Log.v(this.getClass().getSimpleName(), "Built URI " + builtUri.toString());
-
-                // Create the request to OpenWeatherMap, and open the connection
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                // Read the input stream into a String
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                if (inputStream == null) {
-                    // Nothing to do.
-                    return null;
+                JSONObject movies = getMovies();
+                JSONArray results = movies.getJSONArray("results");
+                JSONObject imageConfig = config.getJSONObject("images");
+                JSONArray imageSizes = imageConfig.getJSONArray("poster_sizes");
+                for (int i = 0; i < results.length(); i++) {
+                    JSONObject obj = results.getJSONObject(i);
+                    MoviePoster movie = new MoviePoster();
+                    movie.setId(obj.getInt("id"));
+                    movie.setPath(imageConfig.getString("base_url")
+                            + imageSizes.getString((int) imageSizes.length() / 2)
+                            + obj.getString("poster_path"));
+//                    movie.setPoster();
+                    m.add(movie);
                 }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
-                    buffer.append(line + "\n");
-                }
-
-                if (buffer.length() == 0) {
-                    // Stream was empty.  No point in parsing.
-                    return null;
-                }
-                forecastJsonStr = buffer.toString();
-
-                Log.e("RETURN", new JSONObject(forecastJsonStr).toString(4));
             } catch (MalformedURLException e) {
                 e.printStackTrace(); //TODO Handle
             } catch (ProtocolException e) {
@@ -258,11 +282,96 @@ public class GridActivityFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(ArrayList<MoviePoster> moviePosters) {
-            super.onPostExecute(moviePosters);
+        protected void onPostExecute(ArrayList<MoviePoster> p) {
+            super.onPostExecute(p);
 
             if (dialog.isShowing())
                 dialog.dismiss();
+
+            moviePosters = p;
+            //Grid Adapter
+            GridAdapter adapter = new GridAdapter(getActivity());
+            Log.e("COUNT", adapter.getCount() + "");
+            gridMovies.setAdapter(adapter);
+
+            Log.e("GETTING IMAGES", gridMovies.getFirstVisiblePosition() + " to " + gridMovies.getLastVisiblePosition());
+            for (int i = 0; i < moviePosters.size(); i++) {
+                if (moviePosters.get(i).getPoster() == null) {
+                    new GetMoviePosterThread(i).execute(moviePosters.get(i).getPath());
+                    ImageView loadingImageView = new ImageView(getActivity());
+                    loadingImageView.setImageResource(android.R.drawable.progress_indeterminate_horizontal);
+                }
+            }
+        }
+
+        protected JSONObject getConfig() throws IOException, JSONException {
+            Uri builtUri = Uri.parse(MOVIEDB_CONFIG_URL).buildUpon()
+                    .appendQueryParameter(API_PARAM, API_KEY)
+                    .build();
+
+            URL url = new URL(builtUri.toString());
+
+            Log.v(this.getClass().getSimpleName(), "Built URI " + builtUri.toString());
+
+            // Create the request to OpenWeatherMap, and open the connection
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+
+            // Read the input stream into a String
+            InputStream inputStream = urlConnection.getInputStream();
+            StringBuffer buffer = new StringBuffer();
+            if (inputStream == null) {
+                // Nothing to do.
+                return null;
+            }
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line;
+            while ((line = reader.readLine()) != null)
+                buffer.append(line);
+
+            if (buffer.length() == 0)
+                return null;
+            String jsonString = buffer.toString();
+
+            Log.e("CONFIG", new JSONObject(jsonString).toString(4));
+
+            return new JSONObject(jsonString);
+        }
+
+        protected JSONObject getMovies() throws IOException, JSONException {
+            Uri builtUri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
+                    .appendQueryParameter(API_PARAM, API_KEY)
+                    .build();
+
+            URL url = new URL(builtUri.toString());
+
+            Log.v(this.getClass().getSimpleName(), "Built URI " + builtUri.toString());
+
+            // Create the request to OpenWeatherMap, and open the connection
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+
+            // Read the input stream into a String
+            InputStream inputStream = urlConnection.getInputStream();
+            StringBuffer buffer = new StringBuffer();
+            if (inputStream == null)
+                return null;
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line;
+            while ((line = reader.readLine()) != null)
+                buffer.append(line);
+
+            if (buffer.length() == 0)
+                return null;
+            String jsonString = buffer.toString();
+
+            Log.e("RETURN", new JSONObject(jsonString).getJSONArray("results").getJSONObject(0).toString(4));
+
+            return new JSONObject(jsonString);
         }
     }
 }
