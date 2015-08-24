@@ -149,8 +149,8 @@ public class MoviePoster implements Parcelable {
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeStringArray(new String[]{
 				id + "",
-				path.toString(),
-				poster.toString(),
+				path == null ? null : path.toString(),
+				poster == null ? null : poster.toString(),
 				title,
 				releaseDate,
 				voteAverage + "",
