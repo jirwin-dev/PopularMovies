@@ -11,6 +11,14 @@
     <string name="details_release_date">Release Date</string>
     <string name="details_title">Title</string>
     <string name="sort_by">Sort By</string>
+    <string name="config_thread_error_title">Configuration Error</string>
+    <string name="config_thread_error_message">Could not download the configuration file. Please check your internet connection and try again.</string>
+    <string name="btn_ok">OK</string>
+    <string name="discover_thread_error_title">Discovery Error</string>
+    <string name="discover_thread_error_message">Could not download movies. Please check your internet connection and try again.</string>
+    <string name="error_sort">Could not restore sort method</string>
+    <string name="error_config">Could not restore config</string>
+    <string name="error_discover">Could not restore movies</string>
 
     <string-array name="sort_methods">
         <item>Most Popular</item>
