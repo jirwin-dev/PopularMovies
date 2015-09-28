@@ -19,6 +19,17 @@
     <string name="error_sort">Could not restore sort method</string>
     <string name="error_config">Could not restore config</string>
     <string name="error_discover">Could not restore movies</string>
+    <string name="favorite_title">favorite</string>
+    <string name="sort_title">sort</string>
+    <string name="sort_popular">Most Popular</string>
+    <string name="sort_rating">Highest Rating</string>
+    <string name="favoriteButton">Favorite</string>
+    <string name="unfavoriteButton">Unfavorite</string>
+    <string name="no_trailers">No Trailers</string>
+    <string name="retry">Retry</string>
+    <string name="no_reviews">No Reviews</string>
+    <string name="trailers_title">Trailers</string>
+    <string name="reviews_title">Reviews</string>
 
     <string-array name="sort_methods">
         <item>Most Popular</item>

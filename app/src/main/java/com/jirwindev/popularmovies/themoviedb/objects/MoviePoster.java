@@ -1,4 +1,4 @@
-package com.jirwindev.popularmovies;
+package com.jirwindev.popularmovies.themoviedb.objects;
 
 import android.net.Uri;
 import android.os.Parcel;
@@ -114,6 +114,19 @@ public class MoviePoster implements Parcelable {
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	public String getFileName() {
+		return titleToFileName(this.title);
+	}
+
+	public static String titleToFileName(String title) {
+		return title.trim()
+				.replace(' ', '_')
+				.replace('\\', '_')
+				.replace('/', '_')
+				.replace(':', '_')
+				+ ".png";
 	}
 
 	public String getReleaseDate() {

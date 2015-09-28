@@ -12,15 +12,18 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.GridLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Spinner;
 
+import com.jirwindev.popularmovies.themoviedb.objects.MoviePoster;
 import com.jirwindev.popularmovies.threads.MovieDBThread;
 
 import org.json.JSONArray;
@@ -48,7 +51,7 @@ public class GridActivity extends Activity {
 	final String MOVIEDB_CONFIG_URL = "http://api.themoviedb.org/3/configuration?api_key=";
 	final String MOVIEDB_BASE_URL   = "http://api.themoviedb.org/3/discover/movie?";
 	final String API_PARAM          = "api_key";
-	final String API_KEY            = "16a2f4ed9f33bbef261ee48e3903443f";
+	final String API_KEY            = "redacted";
 	final String SORT_PARAM         = "sort_by";
 	final String EXTRA_POSTERS      = "movie_posters";
 	final String EXTRA_CONFIG       = "config";
@@ -115,6 +118,18 @@ public class GridActivity extends Activity {
 		super.onSaveInstanceState(outState);
 	}
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.grid_menu, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onMenuItemSelected(int featureId, MenuItem item) {
+		return true;
+	}
+
 	/**
 	 * Creates the config uri and starts the call to the server
 	 */
@@ -167,6 +182,16 @@ public class GridActivity extends Activity {
 	 */
 	private void discoverMovies(int sortIndex) {
 		if (config != null) {
+
+
+			try {
+				Log.e("CONFIG", config.toString(4));
+			}
+			catch (JSONException e) {
+				Log.e("CONFIG", "ASDF");
+				e.printStackTrace();
+			}
+
 			String sortMethod = getResources().getStringArray(R.array.sort_methods_api)[sortIndex];
 
 			Uri discoverUri = Uri.parse(MOVIEDB_BASE_URL).buildUpon()
@@ -217,6 +242,17 @@ public class GridActivity extends Activity {
 				final String CONFIG_POSTER_SIZES = "poster_sizes";
 				final String CONFIG_BASE_URL = "base_url";
 
+
+				try {
+					String[] asdf = discover.toString(4).split("\\\n");
+					for (String a : asdf)
+						Log.e(getClass().getSimpleName(), a);
+				}
+				catch (JSONException e) {
+					e.printStackTrace();
+				}
+
+
 				try {
 					JSONArray results = discover.getJSONArray(CONFIG_RESULTS);
 
@@ -231,6 +267,7 @@ public class GridActivity extends Activity {
 						JSONObject obj = results.getJSONObject(i);
 						MoviePoster movie = new MoviePoster();
 						movie.setId(obj.getInt(MoviePoster.ID));
+						Log.e("BASE_URL", baseUrl);
 						movie.setPath(baseUrl + posterSize + obj.getString(MoviePoster.POSTER_PATH));
 						movie.setTitle(obj.getString(MoviePoster.TITLE));
 						movie.setPlotSynopsis(obj.getString(MoviePoster.OVERVIEW));
@@ -299,10 +336,11 @@ public class GridActivity extends Activity {
 			if (convertView == null) {
 				imageView = new ImageView(context);
 				imageView.setLayoutParams(new GridView.LayoutParams(
-						GridLayout.LayoutParams.FILL_PARENT,
-						500
+						GridView.LayoutParams.MATCH_PARENT,
+						800
 				));
-				imageView.setPadding(8, 8, 8, 8);
+				imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+				imageView.setPadding(0, 0, 0, 0);
 				imageView.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View v) {
@@ -317,6 +355,7 @@ public class GridActivity extends Activity {
 					}
 				});
 			}
+
 			else {
 				imageView = (ImageView) convertView;
 			}
@@ -347,10 +386,15 @@ public class GridActivity extends Activity {
 			//Get Storage Directory
 			String root = Environment.getExternalStorageDirectory().toString();
 			File storageDir = new File(root + "/posters");
-			storageDir.mkdirs();
+			Log.wtf(getClass().getSimpleName(), "Creating storage dirs...");
+			boolean makeDirs = storageDir.mkdirs();
+			if (makeDirs)
+				Log.wtf(getClass().getSimpleName(), "Created storages dirs...");
+			else
+				Log.wtf(getClass().getSimpleName(), "Couldn't create storages dirs...");
 
 			//Save poster to file
-			String fname = moviePosters[position].getTitle() + ".png";
+			String fname = moviePosters[position].getFileName();
 			File file = new File(storageDir, fname);
 
 			if (!file.exists()) {

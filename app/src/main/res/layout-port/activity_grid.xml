@@ -29,14 +29,25 @@
             android:id="@+id/sortSpinner"
             android:layout_gravity="center_horizontal"
             android:entries="@array/sort_methods"/>
+
     </LinearLayout>
+
+    <!--<GridView-->
+    <!--android:id="@+id/moviesGridView"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:numColumns="auto_fit"-->
+    <!--android:stretchMode="columnWidth"-->
+    <!--android:layout_weight="1"/>-->
 
     <GridView
         android:id="@+id/moviesGridView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:numColumns="auto_fit"
+        android:verticalSpacing="0dp"
+        android:horizontalSpacing="0dp"
         android:stretchMode="columnWidth"
+        android:numColumns="3"
         android:layout_weight="1"/>
 
 </LinearLayout>
