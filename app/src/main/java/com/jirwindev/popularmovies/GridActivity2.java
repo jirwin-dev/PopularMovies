@@ -20,6 +20,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 
 import com.jirwindev.popularmovies.themoviedb.objects.Configuration;
+import com.jirwindev.popularmovies.themoviedb.objects.Discover;
 import com.jirwindev.popularmovies.themoviedb.objects.MoviePoster;
 import com.squareup.okhttp.Request;
 

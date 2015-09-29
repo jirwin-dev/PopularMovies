@@ -1,6 +1,8 @@
 package com.jirwindev.popularmovies;
 
 import com.jirwindev.popularmovies.themoviedb.objects.Configuration;
+import com.jirwindev.popularmovies.themoviedb.objects.Discover;
+import com.jirwindev.popularmovies.themoviedb.objects.Movie;
 import com.jirwindev.popularmovies.themoviedb.objects.Reviews;
 import com.jirwindev.popularmovies.themoviedb.objects.Videos;
 import com.squareup.okhttp.OkHttpClient;
@@ -44,7 +46,7 @@ public class REST {
 		client.newCall(request).enqueue(callback);
 	}
 
-	public void getMovie(String apiKey, int id, Callback<String> callback) {
+	public void getMovie(String apiKey, int id, Callback<Movie> callback) {
 		api.getMovie(apiKey, id, callback);
 	}
 

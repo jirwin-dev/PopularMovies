@@ -1,4 +1,4 @@
-package com.jirwindev.popularmovies;
+package com.jirwindev.popularmovies.themoviedb.objects;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -42,7 +42,7 @@ public class Discover {
 		this.results = results;
 	}
 
-	class Movie {
+	public class Movie {
 		boolean adult;
 		String  backdrop_path;
 		int[]   genre_ids;
@@ -59,7 +59,8 @@ public class Discover {
 		int     vote_count;
 		Uri     poster;
 
-		Movie(boolean adult, String backdrop_path, int[] genre_ids, int id, String original_language, String original_title, String overview, String release_date, String poster_path, double popularity, String title, boolean video, double vote_average, int vote_count) {
+		public Movie(boolean adult, String backdrop_path, int[] genre_ids, int id,
+					 String original_language, String original_title, String overview, String release_date, String poster_path, double popularity, String title, boolean video, double vote_average, int vote_count) {
 			this.adult = adult;
 			this.backdrop_path = backdrop_path;
 			this.genre_ids = genre_ids;

@@ -1,6 +1,8 @@
 package com.jirwindev.popularmovies;
 
 import com.jirwindev.popularmovies.themoviedb.objects.Configuration;
+import com.jirwindev.popularmovies.themoviedb.objects.Discover;
+import com.jirwindev.popularmovies.themoviedb.objects.Movie;
 import com.jirwindev.popularmovies.themoviedb.objects.Reviews;
 import com.jirwindev.popularmovies.themoviedb.objects.Videos;
 
@@ -24,7 +26,7 @@ public interface TheMovieDBAPI {
 						Callback<Discover> callback);
 
 	@GET("/movie/{id}")
-	void getMovie(@Query("api_key") String api_key, @Path("id") int id, Callback<String> callback);
+	void getMovie(@Query("api_key") String api_key, @Path("id") int id, Callback<Movie> callback);
 
 	@GET("/movie/{id}/videos")
 	void getMovieVideos(@Query("api_key") String api_key, @Path("id") int id,

@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.jirwindev.popularmovies.themoviedb.objects.Movie;
 import com.jirwindev.popularmovies.themoviedb.objects.MoviePoster;
 import com.jirwindev.popularmovies.themoviedb.objects.Reviews;
 import com.jirwindev.popularmovies.themoviedb.objects.Videos;
@@ -29,7 +30,8 @@ public class DetailsActivity extends Activity {
 	private REST rest;
 
 	private LinearLayout trailers, reviews;
-	private int id;
+	private TextView overview;
+	private int      id;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -51,18 +53,18 @@ public class DetailsActivity extends Activity {
 		trailers = (LinearLayout) findViewById(R.id.trailersLinearLayout);
 		reviews = (LinearLayout) findViewById(R.id.reviewsLinearLayout);
 		TextView voteAverage = (TextView) findViewById(R.id.voteAverageTextView);
-		TextView overview = (TextView) findViewById(R.id.overviewTextView);
+		overview = (TextView) findViewById(R.id.overviewTextView);
 
 		//Set defaults
 		posterImage.setImageURI(Uri.parse(args.getString(MoviePoster.POSTER_PATH)));
 		releaseDate.setText(args.getString(MoviePoster.RELEASE_DATE));
 		voteAverage.setText(args.getDouble(MoviePoster.VOTE_AVERAGE) + "");
-		overview.setText(args.getString(MoviePoster.OVERVIEW));
 
 		//Build REST
 		rest = new REST();
 		getTrailers();
 		getReviews();
+		getMovie();
 	}
 
 	@Override
@@ -88,6 +90,23 @@ public class DetailsActivity extends Activity {
 	@Override
 	public void onBackPressed() {
 		this.finish();
+	}
+
+	private void getMovie() {
+		rest.getMovie(TheMovieDBAPI.API_KEY, id, new Callback<Movie>() {
+			@Override
+			public void success(Movie movie, Response response) {
+				Log.i(getClass().getSimpleName(), "Got movie...");
+				overview.setText(movie.getOverview());
+			}
+
+			@Override
+			public void failure(RetrofitError error) {
+				Log.e(getClass().getSimpleName(), "Could not get movie...");
+				Log.e(getClass().getSimpleName(), error.toString());
+				Log.e(getClass().getSimpleName(), error.getUrl());
+			}
+		});
 	}
 
 	private void getTrailers() {
