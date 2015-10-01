@@ -28,6 +28,11 @@ public class Reviews {
 		String content;
 		String url;
 
+		public static final String ID      = "id";
+		public static final String AUTHOR  = "author";
+		public static final String CONTENT = "content";
+		public static final String URL     = "url";
+
 		public Result(String id, String author, String content, String url) {
 			this.id = id;
 			this.author = author;

@@ -16,7 +16,7 @@ import retrofit.http.Query;
  */
 public interface TheMovieDBAPI {
 
-	static final String API_KEY = "redacted";
+	static final String API_KEY = "";
 
 	@GET("/configuration")
 	void getConfiguration(@Query("api_key") String api_key, Callback<Configuration> callback);

@@ -25,6 +25,13 @@ public class Videos {
 		String size;
 		String type;
 
+		public static final String ID   = "id";
+		public static final String KEY  = "key";
+		public static final String NAME = "name";
+		public static final String SITE = "site";
+		public static final String SIZE = "size";
+		public static final String TYPE = "type";
+
 		Result(String id, String iso_639_1, String key, String name, String site, String size, String type) {
 			this.id = id;
 			this.iso_639_1 = iso_639_1;

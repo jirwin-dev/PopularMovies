@@ -1,22 +1,18 @@
 package com.jirwindev.popularmovies.themoviedb.objects;
 
-import com.jirwindev.popularmovies.database.DatabaseHandler;
-
 /**
  * Created by josh on 9/16/15.
  */
-public class Configuration extends DatabaseHandler {
+public class Configuration {
 
 	//	public String images;
 	public Images   images;
 	public String[] change_keys;
 
 	public Configuration() {
-		super();
 	}
 
 	public Configuration(Images images, String[] change_keys) {
-		super();
 		this.images = images;
 		this.change_keys = change_keys;
 	}

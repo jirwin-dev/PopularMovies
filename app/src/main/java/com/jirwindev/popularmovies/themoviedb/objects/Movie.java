@@ -31,6 +31,13 @@ public class Movie {
 	float      vote_average;
 	int        vote_count;
 
+	public static final String ID           = "id";
+	public static final String TITLE        = "title";
+	public static final String VOTE_AVERAGE = "vote_average";
+	public static final String OVERVIEW     = "overview";
+	public static final String RELEASE_DATE = "release_date";
+	public static final String RUNTIME      = "runtime";
+
 	public Movie() {
 
 	}
@@ -349,11 +356,11 @@ public class Movie {
 		this.production_countries = production_countries;
 	}
 
-	public String getRelease_date() {
+	public String getReleaseDate() {
 		return release_date;
 	}
 
-	public void setRelease_date(String release_date) {
+	public void setReleaseDate(String release_date) {
 		this.release_date = release_date;
 	}
 
@@ -413,11 +420,11 @@ public class Movie {
 		this.video = video;
 	}
 
-	public float getVote_average() {
+	public float getVoteAverage() {
 		return vote_average;
 	}
 
-	public void setVote_average(float vote_average) {
+	public void setVoteAverage(float vote_average) {
 		this.vote_average = vote_average;
 	}
 
