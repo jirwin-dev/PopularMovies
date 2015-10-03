@@ -1,18 +1,5 @@
 package com.jirwindev.popularmovies.themoviedb.objects;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Environment;
-import android.util.Log;
-import android.widget.ImageView;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.net.URL;
-
 /**
  * Created by josh on 9/16/15.
  */
@@ -42,6 +29,7 @@ public class Discover {
 		this.results = results;
 	}
 
+	/*
 	public class Movie {
 		boolean adult;
 		String  backdrop_path;
@@ -265,6 +253,7 @@ public class Discover {
 			}
 		}
 	}
+	*/
 
 	/*
 	 {

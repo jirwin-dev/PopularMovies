@@ -15,10 +15,14 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.jirwindev.popularmovies.database.DatabaseHandler;
 import com.jirwindev.popularmovies.themoviedb.objects.Movie;
 import com.jirwindev.popularmovies.themoviedb.objects.MoviePoster;
+import com.jirwindev.popularmovies.themoviedb.objects.ReviewResult;
 import com.jirwindev.popularmovies.themoviedb.objects.Reviews;
+import com.jirwindev.popularmovies.themoviedb.objects.VideoResult;
 import com.jirwindev.popularmovies.themoviedb.objects.Videos;
 
 import retrofit.Callback;
@@ -29,9 +33,13 @@ public class DetailsActivity extends Activity {
 
 	private REST rest;
 
-	private LinearLayout trailers, reviews;
+	private LinearLayout trailersLayout, reviewsLayout;
 	private TextView overview;
 	private int      id;
+	private Movie    movie;
+	private Reviews  reviews;
+	private Videos   videos;
+	private Toast    toast;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -50,15 +58,45 @@ public class DetailsActivity extends Activity {
 		//Get Elements
 		ImageView posterImage = (ImageView) findViewById(R.id.posterImageView);
 		TextView releaseDate = (TextView) findViewById(R.id.releaseDateTextView);
-		trailers = (LinearLayout) findViewById(R.id.trailersLinearLayout);
-		reviews = (LinearLayout) findViewById(R.id.reviewsLinearLayout);
+		final Button favoriteButton = (Button) findViewById(R.id.favoriteButton);
+		trailersLayout = (LinearLayout) findViewById(R.id.trailersLinearLayout);
+		reviewsLayout = (LinearLayout) findViewById(R.id.reviewsLinearLayout);
 		TextView voteAverage = (TextView) findViewById(R.id.voteAverageTextView);
 		overview = (TextView) findViewById(R.id.overviewTextView);
 
 		//Set defaults
+		DatabaseHandler db = new DatabaseHandler(DetailsActivity.this);
 		posterImage.setImageURI(Uri.parse(args.getString(MoviePoster.POSTER_PATH)));
 		releaseDate.setText(args.getString(MoviePoster.RELEASE_DATE));
 		voteAverage.setText(args.getDouble(MoviePoster.VOTE_AVERAGE) + "");
+		if (db.getMovie(id) != null)
+			favoriteButton.setText(getString(R.string.unfavoriteButton));
+		else
+			favoriteButton.setText(getString(R.string.favoriteButton));
+		db.close();
+
+		//Set Listeners
+		favoriteButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				DatabaseHandler db = new DatabaseHandler(DetailsActivity.this);
+
+				if (favoriteButton.getText().equals(getString(R.string.favoriteButton))) {
+					favoriteButton.setText(getString(R.string.unfavoriteButton));
+					db.addOrUpdateMovie(movie);
+					db.addOrUpdateReviews(reviews);
+//					db.addOrUpdateVideos(videos);
+				}
+				else {
+					favoriteButton.setText(getString(R.string.favoriteButton));
+					db.deleteMovie(id);
+					db.deleteReviewsByMovie(id);
+//					db.deleteVideosByMovie(id);
+				}
+
+				db.close();
+			}
+		});
 
 		//Build REST
 		rest = new REST();
@@ -95,9 +133,10 @@ public class DetailsActivity extends Activity {
 	private void getMovie() {
 		rest.getMovie(TheMovieDBAPI.API_KEY, id, new Callback<Movie>() {
 			@Override
-			public void success(Movie movie, Response response) {
+			public void success(Movie m, Response response) {
+				movie = m;
 				Log.i(getClass().getSimpleName(), "Got movie...");
-				overview.setText(movie.getOverview());
+				overview.setText(m.getOverview());
 			}
 
 			@Override
@@ -116,18 +155,21 @@ public class DetailsActivity extends Activity {
 					public void success(Videos v, Response response) {
 						Log.i(getClass().getSimpleName(), "Got videos...");
 
+						//Store
+						videos = v;
+
 						//Empty View
-						trailers.removeAllViews();
+						trailersLayout.removeAllViews();
 
 						if (v.getResults().length == 0) {
 							TextView noTrailers = new TextView(DetailsActivity.this);
 							noTrailers.setText(getString(R.string.no_trailers));
-							trailers.addView(noTrailers);
+							trailersLayout.addView(noTrailers);
 						}
 						else {
 							LayoutInflater inflater = getLayoutInflater();
 
-							for (final Videos.Result trailer : v.getResults()) {
+							for (final VideoResult trailer : v.getResults()) {
 								View trailerLayout = inflater.inflate(R.layout.movie_trailer, null);
 
 								//Get button and assign listener
@@ -147,7 +189,7 @@ public class DetailsActivity extends Activity {
 								titleTextView.setText(trailer.getSite());
 
 								//Add view
-								trailers.addView(trailerLayout);
+								trailersLayout.addView(trailerLayout);
 							}
 						}
 					}
@@ -157,7 +199,7 @@ public class DetailsActivity extends Activity {
 						Log.e(getClass().getSimpleName(), error.toString());
 						Log.e(getClass().getSimpleName(), error.getUrl());
 
-						trailers.removeAllViews();
+						trailersLayout.removeAllViews();
 						Button retry = new Button(DetailsActivity.this);
 						retry.setText(getString(R.string.retry));
 						retry.setOnClickListener(new View.OnClickListener() {
@@ -166,7 +208,7 @@ public class DetailsActivity extends Activity {
 								getTrailers();
 							}
 						});
-						trailers.addView(retry);
+						trailersLayout.addView(retry);
 					}
 				});
 	}
@@ -177,18 +219,21 @@ public class DetailsActivity extends Activity {
 			public void success(Reviews r, Response response) {
 				Log.i(getClass().getSimpleName(), "Got reviews...");
 
+				//Store
+				reviews = r;
+
 				//Empty View
-				reviews.removeAllViews();
+				reviewsLayout.removeAllViews();
 
 				if (r.getResults().length == 0) {
 					TextView noReviews = new TextView(DetailsActivity.this);
 					noReviews.setText(getString(R.string.no_reviews));
-					reviews.addView(noReviews);
+					reviewsLayout.addView(noReviews);
 				}
 				else {
 					LayoutInflater inflater = getLayoutInflater();
 
-					for (final Reviews.Result review : r.getResults()) {
+					for (final ReviewResult review : r.getResults()) {
 						View reviewLayout = inflater.inflate(R.layout.movie_review, null);
 
 						//Set Author
@@ -200,7 +245,7 @@ public class DetailsActivity extends Activity {
 						reviewTextView.setText(review.getContent());
 
 						//Add view
-						reviews.addView(reviewLayout);
+						reviewsLayout.addView(reviewLayout);
 					}
 				}
 			}
@@ -210,7 +255,7 @@ public class DetailsActivity extends Activity {
 				Log.e(getClass().getSimpleName(), error.toString());
 				Log.e(getClass().getSimpleName(), error.getUrl());
 
-				reviews.removeAllViews();
+				reviewsLayout.removeAllViews();
 				Button retry = new Button(DetailsActivity.this);
 				retry.setText(getString(R.string.retry));
 				retry.setOnClickListener(new View.OnClickListener() {
@@ -219,7 +264,7 @@ public class DetailsActivity extends Activity {
 						getReviews();
 					}
 				});
-				reviews.addView(retry);
+				reviewsLayout.addView(retry);
 			}
 		});
 	}

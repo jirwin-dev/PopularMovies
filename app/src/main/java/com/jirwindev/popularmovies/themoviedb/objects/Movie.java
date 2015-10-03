@@ -1,5 +1,18 @@
 package com.jirwindev.popularmovies.themoviedb.objects;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Environment;
+import android.util.Log;
+import android.widget.ImageView;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.URL;
+
 /**
  * Created by josh on 9/28/15.
  */
@@ -28,8 +41,9 @@ public class Movie {
 	String     tagline;
 	String     title;
 	boolean    video;
-	float      vote_average;
+	double     vote_average;
 	int        vote_count;
+	Uri        poster;
 
 	public static final String ID           = "id";
 	public static final String TITLE        = "title";
@@ -37,13 +51,37 @@ public class Movie {
 	public static final String OVERVIEW     = "overview";
 	public static final String RELEASE_DATE = "release_date";
 	public static final String RUNTIME      = "runtime";
+	public static final String POSTER_PATH  = "poster_path";
 
 	public Movie() {
 
 	}
 
+	public Movie(boolean adult, String backdrop_path, Genre[] genres, int id,
+				 String original_language, String original_title, String overview, String release_date, String poster_path, double popularity, String title, boolean video, double vote_average, int vote_count) {
+		this.adult = adult;
+		this.backdrop_path = backdrop_path;
+		this.genres = genres;
+		this.id = id;
+		this.original_language = original_language;
+		this.original_title = original_title;
+		this.overview = overview;
+		this.release_date = release_date;
+		this.poster_path = poster_path;
+		this.popularity = popularity;
+		this.title = title;
+		this.video = video;
+		this.vote_average = vote_average;
+		this.vote_count = vote_count;
+	}
+
 	public Movie(boolean adult, String backdrop_path, Collection belongs_to_collection,
-				 long budget, Genre[] genres, String homepage, int id, String imdb_id, String original_language, String original_title, String overview, double popularity, String poster_path, Company[] production_companies, Country[] production_countries, String release_date, long revenue, int runtime, Language[] spoken_languages, String status, String tagline, String title, boolean video, float vote_average, int vote_count) {
+				 long budget, Genre[] genres, String homepage, int id, String imdb_id,
+				 String original_language, String original_title, String overview,
+				 double popularity, String poster_path, Company[] production_companies,
+				 Country[] production_countries, String release_date, long revenue, int runtime,
+				 Language[] spoken_languages, String status, String tagline, String title,
+				 boolean video, double vote_average, int vote_count) {
 		this.adult = adult;
 		this.backdrop_path = backdrop_path;
 		this.belongs_to_collection = belongs_to_collection;
@@ -95,26 +133,6 @@ public class Movie {
 
 		public String getName() {
 			return name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
-
-		public String getPoster_path() {
-			return poster_path;
-		}
-
-		public void setPoster_path(String poster_path) {
-			this.poster_path = poster_path;
-		}
-
-		public String getBackdrop_path() {
-			return backdrop_path;
-		}
-
-		public void setBackdrop_path(String backdrop_path) {
-			this.backdrop_path = backdrop_path;
 		}
 	}
 
@@ -332,11 +350,11 @@ public class Movie {
 		this.popularity = popularity;
 	}
 
-	public String getPoster_path() {
+	public String getPosterPath() {
 		return poster_path;
 	}
 
-	public void setPoster_path(String poster_path) {
+	public void setPosterPath(String poster_path) {
 		this.poster_path = poster_path;
 	}
 
@@ -420,11 +438,11 @@ public class Movie {
 		this.video = video;
 	}
 
-	public float getVoteAverage() {
+	public double getVoteAverage() {
 		return vote_average;
 	}
 
-	public void setVoteAverage(float vote_average) {
+	public void setVoteAverage(double vote_average) {
 		this.vote_average = vote_average;
 	}
 
@@ -434,5 +452,80 @@ public class Movie {
 
 	public void setVote_count(int vote_count) {
 		this.vote_count = vote_count;
+	}
+
+	public Uri getPoster() {
+		return poster;
+	}
+
+	public void setPoster(Uri poster) {
+		this.poster = poster;
+	}
+
+	class PosterDownloadThread extends AsyncTask<URL, Void, Uri> {
+
+		private ImageView imageView;
+
+		public PosterDownloadThread(ImageView imageView) {
+			this.imageView = imageView;
+		}
+
+		@Override
+		protected Uri doInBackground(URL... urls) {
+			Log.e(getClass().getSimpleName(), "running...");
+
+			if (urls.length != 1)
+				return null;
+			URL url = urls[0];
+
+			//Get Storage Directory
+			String root = Environment.getExternalStorageDirectory().toString();
+			File storageDir = new File(root + "/posters");
+			Log.wtf(getClass().getSimpleName(), "Creating storage dirs...");
+			boolean makeDirs = storageDir.mkdirs();
+			if (makeDirs)
+				Log.wtf(getClass().getSimpleName(), "Created storages dirs...");
+			else
+				Log.wtf(getClass().getSimpleName(), "Couldn't create storages dirs...");
+
+			//Save poster to file
+			String fname = url.getFile();
+			File file = new File(storageDir, fname);
+
+			if (!file.exists()) {
+				try {
+					//Download bitmap
+					Bitmap poster = null;
+					InputStream in = url.openStream();
+					poster = BitmapFactory.decodeStream(in);
+
+					//Save to file
+					FileOutputStream out = new FileOutputStream(file);
+					poster.compress(Bitmap.CompressFormat.JPEG, 90, out);
+					out.flush();
+					out.close();
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+					return null;
+				}
+			}
+
+			return Uri.fromFile(file);
+		}
+
+		@Override
+		protected void onPostExecute(Uri p) {
+			super.onPostExecute(p);
+
+			poster = p;
+
+//				ImageView imageView = ((ImageView) gridMovies.getChildAt(position - gridMovies.getFirstVisiblePosition()));
+//				if (position <= gridMovies.getLastVisiblePosition() && imageView != null) {
+			Log.e("IMAGE", "SET AND INVALIDATED");
+			imageView.setImageURI(p);
+			imageView.invalidate();
+//				}
+		}
 	}
 }
