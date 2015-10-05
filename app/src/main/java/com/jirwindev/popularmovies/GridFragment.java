@@ -374,9 +374,7 @@ public class GridFragment extends Fragment {
 			//Set poster
 			posterImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
 			posterImageView.setPadding(0, 0, 0, 0);
-			if (movies[position].getPoster() == null)
-				posterImageView.setImageResource(R.drawable.no_poster);
-			else
+			if (movies[position].getPoster() != null)
 				posterImageView.setImageURI(movies[position].getPoster());
 
 			return convertView;

@@ -5,16 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
-    tools:context="com.jirwindev.popularmovies.GridActivity">
+    tools:context="com.jirwindev.popularmovies.GridActivity"
+    android:id="@+id/fragment_container">
 
-    <!--<fragment-->
-    <!--android:id="@+id/fragment_grid"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="match_parent"-->
-    <!--tools:layout="@android:layout/list_content"/>-->
-    <FrameLayout
+    <fragment
         android:id="@+id/fragment_grid"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:name="com.jirwindev.popularmovies.GridFragment"
+        tools:layout="@android:layout/list_content"/>
 
 </FrameLayout>

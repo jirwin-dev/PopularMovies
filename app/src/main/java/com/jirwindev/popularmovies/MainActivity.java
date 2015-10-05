@@ -60,11 +60,6 @@ public class MainActivity extends Activity implements Communicator {
 		else
 			getActionBar().setSubtitle(getString(R.string.poplarity_title));
 
-		//Add Grid fragment if not tablet
-		if (!twoPane)
-			getFragmentManager().beginTransaction()
-					.replace(R.id.fragment_grid, new GridFragment(), TAG_GRID)
-					.commit();
 	}
 
 	@Override
@@ -141,7 +136,7 @@ public class MainActivity extends Activity implements Communicator {
 		}
 		else {
 			getFragmentManager().beginTransaction()
-					.replace(R.id.fragment_grid, detailsFrag, TAG_DETAIL)
+					.replace(R.id.fragment_container, detailsFrag, TAG_DETAIL)
 					.addToBackStack(TAG_DETAIL)
 					.commit();
 		}
