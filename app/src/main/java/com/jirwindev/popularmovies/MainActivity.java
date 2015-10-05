@@ -34,12 +34,6 @@ public class MainActivity extends Activity implements Communicator {
 		//Setup Fragments
 		if (findViewById(R.id.detailsContainer) != null) {
 			twoPane = true;
-
-//			if (inState != null) {
-//				getFragmentManager().beginTransaction()
-//						.replace(R.id.detailsContainer, new DetailsFragment(), TAG_DETAIL)
-//						.commit();
-//			}
 		}
 		else {
 			twoPane = false;
@@ -66,6 +60,11 @@ public class MainActivity extends Activity implements Communicator {
 		else
 			getActionBar().setSubtitle(getString(R.string.poplarity_title));
 
+		//Add Grid fragment if not tablet
+		if (!twoPane)
+			getFragmentManager().beginTransaction()
+					.replace(R.id.fragment_grid, new GridFragment(), TAG_GRID)
+					.commit();
 	}
 
 	@Override
@@ -83,7 +82,6 @@ public class MainActivity extends Activity implements Communicator {
 		this.menu = menu;
 		return true;
 	}
-
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
