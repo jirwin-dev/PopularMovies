@@ -4,7 +4,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 import android.widget.ImageView;
 
@@ -16,7 +19,8 @@ import java.net.URL;
 /**
  * Created by josh on 9/28/15.
  */
-public class Movie {
+public class Movie implements Parcelable {
+
 
 	boolean    adult;
 	String     backdrop_path;
@@ -45,13 +49,33 @@ public class Movie {
 	int        vote_count;
 	Uri        poster;
 
-	public static final String ID           = "id";
-	public static final String TITLE        = "title";
-	public static final String VOTE_AVERAGE = "vote_average";
-	public static final String OVERVIEW     = "overview";
-	public static final String RELEASE_DATE = "release_date";
-	public static final String RUNTIME      = "runtime";
-	public static final String POSTER_PATH  = "poster_path";
+	public static final String ID                    = "id";
+	public static final String TITLE                 = "title";
+	public static final String VOTE_AVERAGE          = "vote_average";
+	public static final String OVERVIEW              = "overview";
+	public static final String RELEASE_DATE          = "release_date";
+	public static final String RUNTIME               = "runtime";
+	public static final String POSTER_PATH           = "poster_path";
+	public static final String ADULT                 = "adult";
+	public static final String BACKDROP_PATH         = "backdrop_path";
+	public static final String BELONGS_TO_COLLECTION = "belongs_to_collection";
+	public static final String BUDGET                = "budget";
+	public static final String GENRES                = "genres";
+	public static final String HOMEPAGE              = "homepage";
+	public static final String IMDB_ID               = "imdb_id";
+	public static final String ORIGINAL_LANGUAGE     = "original_language";
+	public static final String ORIGINAL_TITLE        = "original_title";
+	public static final String POPULARITY            = "popularity";
+	public static final String PRODUCTION_COMPANIES  = "production_companies";
+	public static final String PRODUCTION_COUNTRIES  = "production_countries";
+	public static final String REVENUE               = "revenue";
+	public static final String SPOKEN_LANGUAGES      = "spoken_languages";
+	public static final String STATUS                = "status";
+	public static final String TAGLINE               = "tagline";
+	public static final String VIDEO                 = "video";
+	public static final String VOTE_COUNT            = "vote_count";
+	public static final String POSTER                = "poster";
+
 
 	public Movie() {
 
@@ -109,149 +133,72 @@ public class Movie {
 		this.vote_count = vote_count;
 	}
 
-	public class Collection {
-		int    id;
-		String name, poster_path, backdrop_path;
+	public Movie(Parcel in) {
+		Bundle data = in.readBundle();
 
-		public Collection() {
-		}
-
-		public Collection(int id, String name, String poster_path, String backdrop_path) {
-			this.id = id;
-			this.name = name;
-			this.poster_path = poster_path;
-			this.backdrop_path = backdrop_path;
-		}
-
-		public int getId() {
-			return id;
-		}
-
-		public void setId(int id) {
-			this.id = id;
-		}
-
-		public String getName() {
-			return name;
-		}
+		this.adult = data.getBoolean(ADULT);
+		this.backdrop_path = data.getString(BACKDROP_PATH);
+		this.belongs_to_collection = data.getParcelable(BELONGS_TO_COLLECTION);
+		this.budget = data.getLong(BUDGET);
+		this.genres = (Genre[]) data.getParcelableArray(GENRES);
+		this.homepage = data.getString(HOMEPAGE);
+		this.id = data.getInt(ID);
+		this.imdb_id = data.getString(IMDB_ID);
+		this.original_language = data.getString(ORIGINAL_LANGUAGE);
+		this.original_title = data.getString(ORIGINAL_TITLE);
+		this.overview = data.getString(OVERVIEW);
+		this.popularity = data.getDouble(POPULARITY);
+		this.poster_path = data.getString(POSTER_PATH);
+		this.production_companies = (Company[]) data.getParcelableArray(PRODUCTION_COMPANIES);
+		this.production_countries = (Country[]) data.getParcelableArray(PRODUCTION_COUNTRIES);
+		this.release_date = data.getString(RELEASE_DATE);
+		this.revenue = data.getLong(REVENUE);
+		this.runtime = data.getInt(RUNTIME);
+		this.spoken_languages = (Language[]) data.getParcelableArray(SPOKEN_LANGUAGES);
+		this.status = data.getString(STATUS);
+		this.tagline = data.getString(TAGLINE);
+		this.title = data.getString(TITLE);
+		this.video = data.getBoolean(VIDEO);
+		this.vote_average = data.getDouble(VOTE_AVERAGE);
+		this.vote_count = data.getInt(VOTE_COUNT);
+		this.poster = Uri.parse(data.getString(POSTER));
 	}
 
-	public class Genre {
-		int    id;
-		String name;
-
-		public Genre() {
-		}
-
-		public Genre(int id, String name) {
-			this.id = id;
-			this.name = name;
-		}
-
-		public int getId() {
-			return id;
-		}
-
-		public void setId(int id) {
-			this.id = id;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
+	@Override
+	public int describeContents() {
+		return 0;
 	}
 
-	public class Company {
-		int    id;
-		String name;
-
-		public Company() {
-		}
-
-		public Company(int id, String name) {
-			this.id = id;
-			this.name = name;
-		}
-
-		public int getId() {
-			return id;
-		}
-
-		public void setId(int id) {
-			this.id = id;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
-	}
-
-	public class Country {
-		String iso_3116_1;
-		String name;
-
-		public Country() {
-
-		}
-
-		public Country(String iso_3116_1, String name) {
-			this.iso_3116_1 = iso_3116_1;
-			this.name = name;
-		}
-
-		public String getIso_3116_1() {
-			return iso_3116_1;
-		}
-
-		public void setIso_3116_1(String iso_3116_1) {
-			this.iso_3116_1 = iso_3116_1;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
-	}
-
-	public class Language {
-		String iso_639_1;
-		String name;
-
-		public Language() {
-
-		}
-
-		public Language(String iso_639_1, String name) {
-			this.iso_639_1 = iso_639_1;
-			this.name = name;
-		}
-
-		public String getIso_639_1() {
-			return iso_639_1;
-		}
-
-		public void setIso_639_1(String iso_639_1) {
-			this.iso_639_1 = iso_639_1;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
+	@Override
+	public void writeToParcel(Parcel out, int i) {
+		Bundle args = new Bundle();
+		args.putBoolean(ADULT, adult);
+		args.putString(BACKDROP_PATH, backdrop_path);
+		args.putParcelable(BELONGS_TO_COLLECTION, belongs_to_collection);
+		args.putLong(BUDGET, budget);
+		args.putParcelableArray(GENRES, genres);
+		args.putString(HOMEPAGE, homepage);
+		args.putInt(ID, id);
+		args.putString(IMDB_ID, imdb_id);
+		args.putString(ORIGINAL_LANGUAGE, original_language);
+		args.putString(ORIGINAL_TITLE, original_title);
+		args.putString(OVERVIEW, overview);
+		args.putDouble(POPULARITY, popularity);
+		args.putString(POSTER_PATH, poster_path);
+		args.putParcelableArray(PRODUCTION_COMPANIES, production_companies);
+		args.putParcelableArray(PRODUCTION_COUNTRIES, production_countries);
+		args.putString(RELEASE_DATE, release_date);
+		args.putLong(REVENUE, revenue);
+		args.putInt(RUNTIME, runtime);
+		args.putParcelableArray(SPOKEN_LANGUAGES, spoken_languages);
+		args.putString(STATUS, status);
+		args.putString(TAGLINE, tagline);
+		args.putString(TITLE, title);
+		args.putBoolean(VIDEO, video);
+		args.putDouble(VOTE_AVERAGE, vote_average);
+		args.putInt(VOTE_COUNT, vote_count);
+		args.putString(POSTER, poster.toString());
+		out.writeBundle(args);
 	}
 
 	public boolean isAdult() {

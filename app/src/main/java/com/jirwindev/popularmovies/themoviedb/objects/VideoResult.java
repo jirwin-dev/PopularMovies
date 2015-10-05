@@ -1,10 +1,14 @@
 package com.jirwindev.popularmovies.themoviedb.objects;
 
+import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by josh on 10/3/15.
  */
 
-public class VideoResult {
+public class VideoResult implements Parcelable {
 	String id;
 	int    movie_id;
 	String iso_639_1;
@@ -21,8 +25,22 @@ public class VideoResult {
 	public static final String SITE     = "site";
 	public static final String SIZE     = "size";
 	public static final String TYPE     = "type";
+	public static final String ISO      = "iso";
 
 	public VideoResult() {
+	}
+
+	public VideoResult(Parcel in) {
+		Bundle data = in.readBundle();
+
+		id = data.getString(ID);
+		movie_id = data.getInt(MOVIE_ID);
+		iso_639_1 = data.getString(ISO);
+		key = data.getString(KEY);
+		name = data.getString(NAME);
+		site = data.getString(SITE);
+		size = data.getString(SIZE);
+		type = data.getString(TYPE);
 	}
 
 	public VideoResult(String id, String iso_639_1, String key, String name, String site,
@@ -98,5 +116,24 @@ public class VideoResult {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel out, int i) {
+		Bundle args = new Bundle();
+		args.putString(ID, id);
+		args.putInt(MOVIE_ID, movie_id);
+		args.putString(ISO, iso_639_1);
+		args.putString(KEY, key);
+		args.putString(NAME, name);
+		args.putString(SITE, site);
+		args.putString(SIZE, size);
+		args.putString(TYPE, type);
+		out.writeBundle(args);
 	}
 }

@@ -5,12 +5,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import com.jirwindev.popularmovies.themoviedb.objects.Movie;
 import com.jirwindev.popularmovies.themoviedb.objects.ReviewResult;
 import com.jirwindev.popularmovies.themoviedb.objects.Reviews;
 import com.jirwindev.popularmovies.themoviedb.objects.VideoResult;
+import com.jirwindev.popularmovies.themoviedb.objects.Videos;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -133,9 +133,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		if (cursor.getCount() == 0)
 			return null;
 
-		Log.e("COUNT", cursor.getCount() + "");
-		Log.e("STRING 0", cursor.getString(0));
-
 		Movie movie = new Movie();
 		movie.setId(cursor.getInt(0));
 		movie.setTitle(cursor.getString(1));
@@ -186,7 +183,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 	/**
 	 * Deletes a single movie
 	 *
-	 * @param int id
+	 * @param id int
 	 */
 	public void deleteMovie(int id) {
 		SQLiteDatabase db = this.getWritableDatabase();
@@ -197,7 +194,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 	/**
 	 * Tries to add a Review to the database, and updates it if it already exists
 	 *
-	 * @param ReviewResult review
+	 * @param reviews Reviews
 	 */
 	public void addOrUpdateReviews(Reviews reviews) {
 		SQLiteDatabase db = this.getWritableDatabase();
@@ -298,9 +295,137 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		return reviewList;
 	}
 
+	/**
+	 * Deletes all a movies reviews
+	 *
+	 * @param id
+	 */
 	public void deleteReviewsByMovie(int id) {
 		SQLiteDatabase db = this.getWritableDatabase();
 		db.delete(TABLE_REVIEWS, ReviewResult.MOVIE_ID + " = ?", new String[]{String.valueOf(id)});
+		db.close();
+	}
+
+	/**
+	 * Tries to add a Video to the database, and updates it if it already exists
+	 *
+	 * @param videos Videos
+	 */
+	public void addOrUpdateVideos(Videos videos) {
+		SQLiteDatabase db = this.getWritableDatabase();
+
+		db.beginTransaction();
+		for (VideoResult video : videos.getResults()) {
+			ContentValues values = new ContentValues();
+			values.put(VideoResult.ID, video.getId());
+			values.put(VideoResult.MOVIE_ID, videos.getId());
+			values.put(VideoResult.KEY, video.getKey());
+			values.put(VideoResult.SITE, video.getSite());
+			values.put(VideoResult.SIZE, video.getSize());
+			values.put(VideoResult.TYPE, video.getType());
+			db.insertWithOnConflict(TABLE_VIDEOS, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+		}
+		db.setTransactionSuccessful();
+		db.endTransaction();
+		db.close();
+	}
+
+	/**
+	 * Gets a single video
+	 *
+	 * @param id
+	 *
+	 * @return VideoResult video
+	 */
+	public VideoResult getVideo(int id) {
+		SQLiteDatabase db = this.getReadableDatabase();
+
+		Cursor cursor = db.query(TABLE_VIDEOS, new String[]{
+						VideoResult.ID,
+						VideoResult.MOVIE_ID,
+						VideoResult.KEY,
+						VideoResult.NAME,
+						VideoResult.SITE,
+						VideoResult.SIZE,
+						VideoResult.TYPE
+				},
+				VideoResult.ID + "=?",
+				new String[]{String.valueOf(id)},
+				null, null, null, null);
+		if (cursor != null)
+			cursor.moveToFirst();
+		if (cursor.getCount() == 0)
+			return null;
+
+		VideoResult video = new VideoResult();
+		video.setId(cursor.getString(0));
+		video.setMovieId(cursor.getInt(1));
+		video.setKey(cursor.getString(2));
+		video.setName(cursor.getString(3));
+		video.setSite(cursor.getString(4));
+		video.setSize(cursor.getString(5));
+		video.setType(cursor.getString(6));
+
+		db.close();
+
+		return video;
+	}
+
+	/**
+	 * Returns a list of movie videos for a certain movie id
+	 *
+	 * @param id
+	 *
+	 * @return List<VideoResult> videoList
+	 */
+	public List<VideoResult> getVideosByMovie(int id) {
+		List<VideoResult> videoList = new ArrayList<VideoResult>();
+
+		SQLiteDatabase db = this.getWritableDatabase();
+		Cursor cursor = db.query(TABLE_VIDEOS, new String[]{
+						VideoResult.ID,
+						VideoResult.MOVIE_ID,
+						VideoResult.KEY,
+						VideoResult.NAME,
+						VideoResult.SITE,
+						VideoResult.SIZE,
+						VideoResult.TYPE
+				},
+				VideoResult.MOVIE_ID + "=?",
+				new String[]{String.valueOf(id)},
+				null, null, null, null);
+		if (cursor != null)
+			cursor.moveToFirst();
+
+		// looping through all rows and adding to list
+		if (cursor.moveToFirst()) {
+			do {
+				VideoResult video = new VideoResult();
+				video.setId(cursor.getString(0));
+				video.setMovieId(cursor.getInt(1));
+				video.setKey(cursor.getString(2));
+				video.setName(cursor.getString(3));
+				video.setSite(cursor.getString(4));
+				video.setSize(cursor.getString(5));
+				video.setType(cursor.getString(6));
+				videoList.add(video);
+			}
+			while (cursor.moveToNext());
+		}
+
+		db.close();
+
+		return videoList;
+	}
+
+	/**
+	 * Deletes all a movies videos
+	 *
+	 * @param id
+	 */
+	public void deleteVideosByMovie(int id) {
+		SQLiteDatabase db = this.getWritableDatabase();
+		db.delete(TABLE_VIDEOS, VideoResult.MOVIE_ID + " = ?", new String[]{String.valueOf(id)});
 		db.close();
 	}
 }

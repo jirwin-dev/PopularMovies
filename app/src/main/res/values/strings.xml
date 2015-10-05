@@ -1,7 +1,5 @@
 <resources>
     <string name="app_name">Popular Movies</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
     <string name="getting_movies_dialog">Fetching movies...</string>
     <string name="config_thread_title">Getting configuration...</string>
     <string name="discover_thread_title">Discovering movies...</string>
@@ -16,13 +14,16 @@
     <string name="btn_ok">OK</string>
     <string name="discover_thread_error_title">Discovery Error</string>
     <string name="discover_thread_error_message">Could not download movies. Please check your internet connection and try again.</string>
-    <string name="error_sort">Could not restore sort method</string>
-    <string name="error_config">Could not restore config</string>
+    <string name="error">Connection error!\nClick to retry</string>
+    <string name="error_config">Connection error!\nClick to retry.</string>
     <string name="error_discover">Could not restore movies</string>
     <string name="favorite_title">favorite</string>
     <string name="sort_title">sort</string>
-    <string name="sort_popular">Most Popular</string>
+    <string name="error_sort">REMOVE ME</string>
+    <string name="sort_popular">Popularity</string>
+    <string name="sort_popular_param">popularity.desc</string>
     <string name="sort_rating">Highest Rating</string>
+    <string name="sort_rating_param">vote_average.desc</string>
     <string name="favoriteButton">Favorite</string>
     <string name="unfavoriteButton">Unfavorite</string>
     <string name="no_trailers">No Trailers</string>
@@ -30,15 +31,12 @@
     <string name="no_reviews">No Reviews</string>
     <string name="trailers_title">Trailers</string>
     <string name="reviews_title">Reviews</string>
+    <string name="favorites_title">Favorite Movies</string>
+    <string name="rating_title">Highest Rated Movies</string>
+    <string name="poplarity_title">Most Popular Movies</string>
+    <string name="offline_favorite">Cannot favorite offline!</string>
+    <string name="overview_title">Overview</string>
+    <string name="overview_error">Could not get overview...</string>
 
-    <string-array name="sort_methods">
-        <item>Most Popular</item>
-        <item>Highest Rated</item>
-    </string-array>
-
-    <string-array name="sort_methods_api">
-        <item>popularity.desc</item>
-        <item>vote_average.desc</item>
-    </string-array>
 
 </resources>
