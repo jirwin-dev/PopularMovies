@@ -2,6 +2,7 @@
             xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@color/background"
             tools:context="com.jirwindev.popularmovies.DetailsActivity">
 
     <LinearLayout
@@ -13,15 +14,29 @@
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin">
 
+        <TextView
+            android:id="@+id/titleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@color/primary"/>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:background="@color/primary"/>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
             <FrameLayout
-                android:layout_weight="1"
                 android:layout_width="0dip"
-                android:layout_height="250dp">
+                android:layout_height="250dp"
+                android:layout_weight="1">
 
                 <ProgressBar
                     android:layout_width="wrap_content"
@@ -41,41 +56,41 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="250dp"
-                android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/yearTextView"
                     android:layout_width="wrap_content"
-                    android:textColor="@color/primary"
-                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/activity_vertical_margin"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
                     android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:layout_height="wrap_content"/>
+                    android:textColor="@color/primary"/>
 
                 <TextView
                     android:id="@+id/durationTextView"
                     android:layout_width="wrap_content"
-                    android:textColor="@color/primary"
-                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/activity_vertical_margin"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:layout_height="wrap_content"/>
+                    android:textColor="@color/primary"/>
 
                 <TextView
                     android:id="@+id/releaseDateTextView"
                     android:layout_width="wrap_content"
-                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/activity_vertical_margin"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:layout_height="wrap_content"/>
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    android:textAppearance="?android:attr/textAppearanceSmall"/>
 
                 <Button
                     android:id="@+id/favoriteButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/activity_vertical_margin"
                     android:layout_marginBottom="@dimen/activity_vertical_margin"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
                     android:text="@string/favoriteButton"/>
 
             </LinearLayout>
@@ -85,16 +100,16 @@
         <View
             android:layout_width="fill_parent"
             android:layout_height="1dip"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
             android:background="@color/primary"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/primary"
+            android:text="@string/overview_title"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="@string/overview_title"/>
+            android:textColor="@color/primary"/>
 
         <TextView
             android:id="@+id/overviewTextView"
@@ -104,16 +119,16 @@
         <View
             android:layout_width="fill_parent"
             android:layout_height="1dip"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
             android:background="@color/primary"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/primary"
+            android:text="@string/trailers_title"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="@string/trailers_title"/>
+            android:textColor="@color/primary"/>
 
         <LinearLayout
             android:id="@+id/trailersLinearLayout"
@@ -132,16 +147,16 @@
         <View
             android:layout_width="fill_parent"
             android:layout_height="1dip"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
             android:background="@color/primary"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/primary"
+            android:text="@string/details_vote_average"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="@string/details_vote_average"/>
+            android:textColor="@color/primary"/>
 
         <TextView
             android:id="@+id/voteAverageTextView"
@@ -151,17 +166,17 @@
         <View
             android:layout_width="fill_parent"
             android:layout_height="1dip"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
             android:background="@color/primary"/>
 
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/primary"
+            android:text="@string/reviews_title"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="@string/reviews_title"/>
+            android:textColor="@color/primary"/>
 
         <LinearLayout
             android:id="@+id/reviewsLinearLayout"

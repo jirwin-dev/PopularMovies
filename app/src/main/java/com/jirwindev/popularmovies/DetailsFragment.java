@@ -1,6 +1,6 @@
 package com.jirwindev.popularmovies;
 
-import android.app.Activity;
+import android.app.Fragment;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -28,7 +29,7 @@ import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-public class DetailsActivity extends Activity {
+public class DetailsFragment extends Fragment {
 
 	private static final String STATE_MOVIE        = "movie";
 	private static final String STATE_VIDEOS       = "videos";
@@ -42,7 +43,7 @@ public class DetailsActivity extends Activity {
 	private LinearLayout trailersLayout, reviewsLayout;
 	private ImageView posterImage;
 	private Uri       posterImageUri;
-	private TextView  overview, year, duration, voteAverage, releaseDate;
+	private TextView  title, overview, year, duration, voteAverage, releaseDate;
 	private Button  btnFavorite;
 	private int     id;
 	private Movie   movie;
@@ -50,106 +51,62 @@ public class DetailsActivity extends Activity {
 	private Videos  videos;
 	private Toast   toast;
 
-	@Override
-	protected void onCreate(Bundle inState) {
-		super.onCreate(inState);
-		setContentView(R.layout.activity_details);
+	public DetailsFragment() {
+	}
 
-		//Get Movie Data
-		Bundle args = getIntent().getExtras();
-		try {
-			id = inState.getInt(STATE_ID);
-		}
-		catch (Exception e) {
-			id = args.getInt(Movie.ID);
-		}
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle inState) {
+
+		View rootView = inflater.inflate(R.layout.fragment_details, container, false);
 
 		//Setup Toast
-		toast = new Toast(DetailsActivity.this);
-
-		//Setup ActionBar
-		getActionBar().setDisplayHomeAsUpEnabled(true);
-		getActionBar().setTitle(args.getString(Movie.TITLE));
+		toast = new Toast(getActivity());
 
 		//Get Elements
-		posterImage = (ImageView) findViewById(R.id.posterImageView);
-		releaseDate = (TextView) findViewById(R.id.releaseDateTextView);
-		btnFavorite = (Button) findViewById(R.id.favoriteButton);
-		trailersLayout = (LinearLayout) findViewById(R.id.trailersLinearLayout);
-		reviewsLayout = (LinearLayout) findViewById(R.id.reviewsLinearLayout);
-		voteAverage = (TextView) findViewById(R.id.voteAverageTextView);
-		overview = (TextView) findViewById(R.id.overviewTextView);
-		year = (TextView) findViewById(R.id.yearTextView);
-		duration = (TextView) findViewById(R.id.durationTextView);
+		title = (TextView) rootView.findViewById(R.id.titleTextView);
+		posterImage = (ImageView) rootView.findViewById(R.id.posterImageView);
+		releaseDate = (TextView) rootView.findViewById(R.id.releaseDateTextView);
+		btnFavorite = (Button) rootView.findViewById(R.id.favoriteButton);
+		trailersLayout = (LinearLayout) rootView.findViewById(R.id.trailersLinearLayout);
+		reviewsLayout = (LinearLayout) rootView.findViewById(R.id.reviewsLinearLayout);
+		voteAverage = (TextView) rootView.findViewById(R.id.voteAverageTextView);
+		overview = (TextView) rootView.findViewById(R.id.overviewTextView);
+		year = (TextView) rootView.findViewById(R.id.yearTextView);
+		duration = (TextView) rootView.findViewById(R.id.durationTextView);
 
-		//Set Favorite
-		DatabaseHandler db = new DatabaseHandler(DetailsActivity.this);
-		if (db.getMovie(id) != null)
-			btnFavorite.setText(getString(R.string.unfavoriteButton));
-		else
-			btnFavorite.setText(getString(R.string.favoriteButton));
-		db.close();
-
-		//Set Poster Image
-		try {
-			posterImageUri = Uri.parse(inState.getString(STATE_POSTER_PATH));
-		}
-		catch (Exception e) {
-			posterImageUri = Uri.parse(args.getString(Movie.POSTER_PATH));
-		}
-		finally {
-			posterImage.setImageURI(posterImageUri);
-		}
-
-		//Set release date
-		try {
-			releaseDate.setText(inState.getString(STATE_RELEASE_DATE));
-		}
-		catch (Exception e) {
+		//Get Movie Data
+		Bundle args = getArguments();
+		if (args != null) {
+			id = args.getInt(Movie.ID);
+			if (args.getString(Movie.POSTER_PATH) != null)
+				posterImageUri = Uri.parse(args.getString(Movie.POSTER_PATH));
 			releaseDate.setText(args.getString(Movie.RELEASE_DATE));
-		}
-
-		//Set vote average
-		try {
-			voteAverage.setText(inState.getString(STATE_VOTE_AVERAGE));
-		}
-		catch (Exception e) {
 			voteAverage.setText(args.getDouble(Movie.VOTE_AVERAGE) + "");
 		}
 
-		//Set Listeners
-		btnFavorite.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				DatabaseHandler db = new DatabaseHandler(DetailsActivity.this);
-
-				if (btnFavorite.getText().equals(getString(R.string.favoriteButton))) {
-
-					if (movie == null) {
-						toast.cancel();
-						toast.makeText(DetailsActivity.this, getString(R.string.offline_favorite),
-								Toast.LENGTH_SHORT).show();
-					}
-					else {
-						btnFavorite.setText(getString(R.string.unfavoriteButton));
-						db.addOrUpdateMovie(movie);
-						db.addOrUpdateReviews(reviews);
-						db.addOrUpdateVideos(videos);
-					}
-				}
-				else {
-					btnFavorite.setText(getString(R.string.favoriteButton));
-					db.deleteMovie(id);
-					db.deleteReviewsByMovie(id);
-					db.deleteVideosByMovie(id);
-				}
-
-				db.close();
-			}
-		});
-
 		//Build REST
 		rest = new REST();
+
+		return rootView;
+	}
+
+	@Override
+	public void onActivityCreated(Bundle inState) {
+		super.onActivityCreated(inState);
+
+		if (inState != null) {
+			//Josh used Full Restore on Details Fragment
+			id = inState.getInt(STATE_ID);
+			posterImageUri = Uri.parse(inState.getString(STATE_POSTER_PATH));
+			voteAverage.setText(inState.getString(STATE_VOTE_AVERAGE));
+			releaseDate.setText(inState.getString(STATE_RELEASE_DATE));
+		}
+
+		//Set poster image
+		if (posterImageUri == null)
+			posterImage.setImageResource(R.drawable.no_poster);
+		else
+			posterImage.setImageURI(posterImageUri);
 
 		//Get Trailers
 		try {
@@ -179,10 +136,49 @@ public class DetailsActivity extends Activity {
 		catch (Exception e) {
 			getMovie();
 		}
+
+		//Set Favorite
+		DatabaseHandler db = new DatabaseHandler(getActivity());
+		if (db.getMovie(id) != null)
+			btnFavorite.setText(getString(R.string.unfavoriteButton));
+		else
+			btnFavorite.setText(getString(R.string.favoriteButton));
+		db.close();
+
+		//Set Listeners
+		btnFavorite.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				DatabaseHandler db = new DatabaseHandler(getActivity());
+
+				if (btnFavorite.getText().equals(getString(R.string.favoriteButton))) {
+
+					if (movie == null) {
+						toast.cancel();
+						toast.makeText(getActivity(), getString(R.string.offline_favorite),
+								Toast.LENGTH_SHORT).show();
+					}
+					else {
+						btnFavorite.setText(getString(R.string.unfavoriteButton));
+						db.addOrUpdateMovie(movie);
+						db.addOrUpdateReviews(reviews);
+						db.addOrUpdateVideos(videos);
+					}
+				}
+				else {
+					btnFavorite.setText(getString(R.string.favoriteButton));
+					db.deleteMovie(id);
+					db.deleteReviewsByMovie(id);
+					db.deleteVideosByMovie(id);
+				}
+
+				db.close();
+			}
+		});
 	}
 
 	@Override
-	protected void onSaveInstanceState(Bundle outState) {
+	public void onSaveInstanceState(Bundle outState) {
 		outState.putParcelable(STATE_MOVIE, movie);
 		outState.putParcelable(STATE_REVIEWS, reviews);
 		outState.putParcelable(STATE_VIDEOS, videos);
@@ -192,11 +188,6 @@ public class DetailsActivity extends Activity {
 		outState.putString(STATE_VOTE_AVERAGE, voteAverage.getText().toString());
 
 		super.onSaveInstanceState(outState);
-	}
-
-	@Override
-	public void onBackPressed() {
-		this.finish();
 	}
 
 	/**
@@ -215,7 +206,7 @@ public class DetailsActivity extends Activity {
 				Log.e(getClass().getSimpleName(), error.toString());
 				Log.e(getClass().getSimpleName(), error.getUrl());
 
-				DatabaseHandler db = new DatabaseHandler(DetailsActivity.this);
+				DatabaseHandler db = new DatabaseHandler(getActivity());
 				movie = db.getMovie(id);
 				db.close();
 
@@ -232,6 +223,7 @@ public class DetailsActivity extends Activity {
 			overview.setText(getString(R.string.overview_error));
 		}
 		else {
+			title.setText(movie.getTitle());
 			overview.setText(movie.getOverview());
 			duration.setText(movie.getRuntime() + " min.");
 			year.setText(movie.getReleaseDate().substring(0, 4));
@@ -265,7 +257,7 @@ public class DetailsActivity extends Activity {
 						trailersLayout.removeAllViews();
 
 						//Check database
-						DatabaseHandler db = new DatabaseHandler(DetailsActivity.this);
+						DatabaseHandler db = new DatabaseHandler(getActivity());
 						List<VideoResult> videoResults = db.getVideosByMovie(id);
 						db.close();
 
@@ -290,7 +282,7 @@ public class DetailsActivity extends Activity {
 	private void displayVideos() {
 
 		if (videos.getResults().length == 0) {
-			TextView noTrailers = new TextView(DetailsActivity.this);
+			TextView noTrailers = new TextView(getActivity());
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
 					LinearLayout.LayoutParams.MATCH_PARENT,
 					LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -302,7 +294,7 @@ public class DetailsActivity extends Activity {
 			trailersLayout.addView(noTrailers);
 		}
 		else {
-			LayoutInflater inflater = getLayoutInflater();
+			LayoutInflater inflater = getActivity().getLayoutInflater();
 
 			for (final VideoResult trailer : videos.getResults()) {
 				View trailerLayout = inflater.inflate(R.layout.movie_trailer, null);
@@ -354,7 +346,7 @@ public class DetailsActivity extends Activity {
 				reviewsLayout.removeAllViews();
 
 				//Check DB for reviews
-				DatabaseHandler db = new DatabaseHandler(DetailsActivity.this);
+				DatabaseHandler db = new DatabaseHandler(getActivity());
 				List<ReviewResult> reviewResults = db.getReviewsByMovie(id);
 				db.close();
 
@@ -377,7 +369,7 @@ public class DetailsActivity extends Activity {
 	 */
 	private void displayReviews() {
 		if (reviews.getResults().length == 0) {
-			TextView noReviews = new TextView(DetailsActivity.this);
+			TextView noReviews = new TextView(getActivity());
 			noReviews.setText(getString(R.string.no_reviews));
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
 					LinearLayout.LayoutParams.MATCH_PARENT,
@@ -388,7 +380,7 @@ public class DetailsActivity extends Activity {
 			reviewsLayout.addView(noReviews);
 		}
 		else {
-			LayoutInflater inflater = getLayoutInflater();
+			LayoutInflater inflater = getActivity().getLayoutInflater();
 
 			for (final ReviewResult review : reviews.getResults()) {
 				View reviewLayout = inflater.inflate(R.layout.movie_review, null);
@@ -406,4 +398,5 @@ public class DetailsActivity extends Activity {
 			}
 		}
 	}
+
 }

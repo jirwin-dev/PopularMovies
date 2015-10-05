@@ -1,8 +1,7 @@
 package com.jirwindev.popularmovies;
 
-import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -11,7 +10,6 @@ import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,14 +34,13 @@ import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-public class GridActivity extends Activity {
+public class GridFragment extends Fragment {
 
 	private static final String STATE_CONFIG          = "configuration";
 	private static final String STATE_MOVIES          = "movies";
 	private static final String STATE_ERROR           = "error";
 	private static final String STATE_SORT_POPULARITY = "popularity";
 	private static final String STATE_SORT_RATING     = "rating";
-	private static final String STATE_SUBTITLE        = "subtitle";
 
 	//REST
 	private REST    rest;
@@ -59,14 +56,24 @@ public class GridActivity extends Activity {
 
 	private Configuration configuration;
 
+	private Communicator comm;
+
+	public GridFragment() {
+		setHasOptionsMenu(true);
+	}
+
 	@Override
-	protected void onCreate(Bundle inState) {
-		super.onCreate(inState);
-		setContentView(R.layout.activity_grid);
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle inState) {
+
+		//Communicator
+		comm = (Communicator) getActivity();
+
+		//Root View
+		View rootView = inflater.inflate(R.layout.fragment_grid, container, false);
 
 		//Get Elements
-		gridMovies = (GridView) findViewById(R.id.moviesGridView);
-		tvError = (TextView) findViewById(R.id.errorTextView);
+		gridMovies = (GridView) rootView.findViewById(R.id.moviesGridView);
+		tvError = (TextView) rootView.findViewById(R.id.errorTextView);
 
 		//Get sort
 		try {
@@ -127,20 +134,7 @@ public class GridActivity extends Activity {
 		if (!storageDir.exists())
 			storageDir.mkdirs();
 
-		//Action Bar
-		try {
-			getActionBar().setSubtitle(inState.getString(STATE_SUBTITLE));
-		}
-		catch (Exception e) {
-			getActionBar().setSubtitle(getString(R.string.poplarity_title));
-		}
-	}
-
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-		gridMovies.invalidateViews();
+		return rootView;
 	}
 
 	@Override
@@ -149,50 +143,6 @@ public class GridActivity extends Activity {
 		outState.putParcelable(STATE_CONFIG, configuration);
 		outState.putParcelableArray(STATE_MOVIES, movies);
 		outState.putString(STATE_ERROR, tvError.getText().toString());
-		outState.putBoolean(STATE_SORT_RATING, menu.findItem(R.id.sort_rating).isChecked());
-		outState.putBoolean(STATE_SORT_POPULARITY, menu.findItem(R.id.sort_popular).isChecked());
-		outState.putString(STATE_SUBTITLE, getActionBar().getSubtitle().toString());
-	}
-
-	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
-		menu.findItem(R.id.sort_popular).setChecked(sortPopularity);
-		menu.findItem(R.id.sort_rating).setChecked(sortRating);
-
-		return super.onPrepareOptionsMenu(menu);
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.grid_menu, menu);
-		this.menu = menu;
-		return true;
-	}
-
-	@Override
-	public boolean onMenuItemSelected(int featureId, MenuItem item) {
-		switch (item.getItemId()) {
-			case R.id.favorites:
-				menu.findItem(R.id.sort_rating).setChecked(false);
-				menu.findItem(R.id.sort_popular).setChecked(false);
-				getActionBar().setSubtitle(getString(R.string.favorites_title));
-				getFavorites();
-				return true;
-			case R.id.sort_popular:
-				menu.findItem(R.id.sort_rating).setChecked(item.isChecked());
-				item.setChecked(!item.isChecked());
-				getMovies(getString(R.string.sort_popular_param));
-				getActionBar().setSubtitle(getString(R.string.poplarity_title));
-				return true;
-			case R.id.sort_rating:
-				menu.findItem(R.id.sort_popular).setChecked(item.isChecked());
-				item.setChecked(!item.isChecked());
-				getMovies(getString(R.string.sort_rating_param));
-				getActionBar().setSubtitle(getString(R.string.rating_title));
-				return true;
-		}
-		return false;
 	}
 
 	/**
@@ -202,17 +152,11 @@ public class GridActivity extends Activity {
 		rest.getConfiguration(TheMovieDBAPI.API_KEY, new Callback<Configuration>() {
 			@Override
 			public void success(Configuration c, Response response) {
-				Log.e(getClass().getSimpleName(), "SUCCESS");
-
+				//Store
 				configuration = c;
 
-				MenuItem sortPopular = menu.findItem(R.id.sort_popular);
-				MenuItem sortRating = menu.findItem(R.id.sort_rating);
-
-				if (sortRating.isChecked())
-					getMovies(getString(R.string.sort_rating_param));
-				if (sortPopular.isChecked())
-					getMovies(getString(R.string.sort_popular_param));
+				//Get movies
+				getMovies(comm.getSort());
 			}
 
 			@Override
@@ -231,15 +175,14 @@ public class GridActivity extends Activity {
 	 * Gets the movies base ond your sort parameter
 	 */
 	public void getMovies(String sortMethod) {
-		Log.e(getClass().getSimpleName(), "SORT BY: " + sortMethod);
-
 		rest.discoverMovies(TheMovieDBAPI.API_KEY, sortMethod,
 				new Callback<Discover>() {
 					@Override
 					public void success(Discover discovery, Response response) {
-						//Results
+						//Store
 						movies = discovery.getResults();
 
+						//Show em
 						displayMovies();
 					}
 
@@ -258,8 +201,8 @@ public class GridActivity extends Activity {
 	/**
 	 * Gets your favorites and resets the adapter
 	 */
-	private void getFavorites() {
-		DatabaseHandler db = new DatabaseHandler(GridActivity.this);
+	public void getFavorites() {
+		DatabaseHandler db = new DatabaseHandler(getActivity());
 		List<Movie> movieList = db.getAllMovies();
 		movies = new Movie[movieList.size()];
 		movies = movieList.toArray(movies);
@@ -268,6 +211,7 @@ public class GridActivity extends Activity {
 		//Remove Error Message
 		tvError.setText("");
 
+		//Show em
 		displayMovies();
 	}
 
@@ -279,13 +223,14 @@ public class GridActivity extends Activity {
 		for (int i = 0; i < movies.length; i++) {
 
 			//Supposed poster file
-			File poster = new File(storageDir, movies[i].getPosterPath().replace("/", ""));
-
-			if (poster.exists()) {
-				movies[i].setPoster(Uri.fromFile(poster));
-			}
-			else {
-				downloadPoster(i);
+			if (movies[i].getPosterPath() != null) {
+				File poster = new File(storageDir, movies[i].getPosterPath().replace("/", ""));
+				if (poster.exists()) {
+					movies[i].setPoster(Uri.fromFile(poster));
+				}
+				else {
+					downloadPoster(i);
+				}
 			}
 		}
 
@@ -294,7 +239,7 @@ public class GridActivity extends Activity {
 			tvError.setText("");
 
 		//Update adapter
-		adapter = new GridAdapter(getApplicationContext());
+		adapter = new GridAdapter(getActivity());
 		gridMovies.setAdapter(adapter);
 	}
 
@@ -355,7 +300,7 @@ public class GridActivity extends Activity {
 
 		@Override
 		public void run() {
-			GridActivity.this.runOnUiThread(new Runnable() {
+			getActivity().runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
 					adapter.notifyDataSetChanged();
@@ -397,13 +342,13 @@ public class GridActivity extends Activity {
 			ImageView posterImageView, starImageView;
 
 			//Get favorites
-			DatabaseHandler db = new DatabaseHandler(GridActivity.this);
+			DatabaseHandler db = new DatabaseHandler(getActivity());
 			Movie favorite = db.getMovie(movies[position].getId());
 			db.close();
 
 			//Get item layout
 			if (convertView == null) {
-				LayoutInflater inflater = LayoutInflater.from(GridActivity.this);
+				LayoutInflater inflater = LayoutInflater.from(getActivity());
 				convertView = inflater.inflate(R.layout.movie_poster, parent, false);
 			}
 
@@ -415,15 +360,7 @@ public class GridActivity extends Activity {
 			convertView.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					Intent intent = new Intent(context, DetailsActivity.class);
-					intent.putExtra(Movie.ID, movies[position].getId());
-					intent.putExtra(Movie.TITLE, movies[position].getTitle());
-					intent.putExtra(Movie.POPULARITY, movies[position].getPopularity());
-					intent.putExtra(Movie.RELEASE_DATE, movies[position].getReleaseDate());
-					intent.putExtra(Movie.VOTE_AVERAGE, movies[position].getVoteAverage());
-					intent.putExtra(Movie.OVERVIEW, movies[position].getOverview());
-					intent.putExtra(Movie.POSTER_PATH, movies[position].getPoster().toString());
-					startActivity(intent);
+					comm.showDetails(movies[position]);
 				}
 			});
 
@@ -437,7 +374,10 @@ public class GridActivity extends Activity {
 			//Set poster
 			posterImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
 			posterImageView.setPadding(0, 0, 0, 0);
-			posterImageView.setImageURI(movies[position].getPoster());
+			if (movies[position].getPoster() == null)
+				posterImageView.setImageResource(R.drawable.no_poster);
+			else
+				posterImageView.setImageURI(movies[position].getPoster());
 
 			return convertView;
 		}

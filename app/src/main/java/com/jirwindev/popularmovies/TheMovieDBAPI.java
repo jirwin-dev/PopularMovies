@@ -16,24 +16,24 @@ import retrofit.http.Query;
  */
 public interface TheMovieDBAPI {
 
-	static final String API_KEY = "REDACTED";
+	static final String API_KEY = "16a2f4ed9f33bbef261ee48e3903443f";
 
 	@GET("/configuration")
 	void getConfiguration(@Query("api_key") String api_key, Callback<Configuration> callback);
 
 	@GET("/discover/movie")
 	void discoverMovies(@Query("api_key") String api_key, @Query("sort_by") String sort,
-						Callback<Discover> callback);
+	                    Callback<Discover> callback);
 
 	@GET("/movie/{id}")
 	void getMovie(@Query("api_key") String api_key, @Path("id") int id, Callback<Movie> callback);
 
 	@GET("/movie/{id}/videos")
 	void getMovieVideos(@Query("api_key") String api_key, @Path("id") int id,
-						Callback<Videos> callback);
+	                    Callback<Videos> callback);
 
 	@GET("/movie/{id}/reviews")
 	void getMovieReviews(@Query("api_key") String api_key, @Path("id") int id,
-						 Callback<Reviews> callback);
+	                     Callback<Reviews> callback);
 
 }
